@@ -9,7 +9,7 @@ bin           = @["nimmap"]
 
 # Dependencies
 
-requires "nim >= 1.6.2"
+requires "nim >= 1.2.0"
 requires "futhark"
 requires "nimqml"
 
@@ -18,7 +18,8 @@ import std/strformat
 # let test_args = "data/point.shp"
 # let test_args = "data/regioni.gpkg"
 # let test_args = "data/twopoly.gpkg"
-let test_args = "data/multilayer.gpkg data/regioni.gpkg"
+# let test_args = "data/multilayer.gpkg data/regioni.gpkg"
+let test_args = "data/multilayer.gpkg"
 
 task auxCompile, "auxCompile":
     exec("nimble build")
@@ -30,4 +31,4 @@ task nimmap, "nimmap":
     
 task valgrind, "valgrind":
     exec("nimble auxCompile")
-    exec(&"valgrind --leak-check=yes --log-file=valgrind-out.txt ./nimmap {test_args}")
+    exec(&"valgrind --tool=memcheck --leak-check=yes --track-origins=yes --log-file=valgrind-out.txt ./nimmap {test_args}")

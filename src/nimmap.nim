@@ -1,16 +1,16 @@
-import std/[os, strformat, sugar]
+import std/[os, strformat, sugar, compilesettings]
 
 import nimqml
 
 import qmaplayermodel
 import geometry
 
-when not defined(futhark):
+when not defined(useFuthark):
   import gdal
 else:
   import futhark
   importc:
-    absPath "/usr/lib/clang/10.0/include"
+    absPath "/usr/lib/clang/10/include"
     path "/usr/include/gdal"
     "gdal.h"
     "ogr_core.h"
@@ -44,7 +44,6 @@ proc load(gdalLayer: OGRLayerH): Layer =
     #       echo &"{OGR_F_GetFieldAsInteger64(feature, iField)},"
     #     of OFTReal:
     #       echo &"{OGR_F_GetFieldAsDouble(feature, iField):.4f},"
-    #     of OFTString:
     #       echo &"{OGR_F_GetFieldAsString(feature, iField)},"
     #     else:
     #       echo &"{OGR_F_GetFieldAsString(feature, iField)},"
