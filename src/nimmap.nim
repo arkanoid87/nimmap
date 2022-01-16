@@ -2,8 +2,8 @@ import std/[os, strformat, sugar, compilesettings]
 
 import nimqml
 
-import qlib/maplayermodel
-import nlib/geometry
+import qlib/[utils, maplayermodel, logic]
+import nlib/[geometry, osm]
 
 when not defined(useFuthark):
   import nlib/gdal
@@ -137,19 +137,21 @@ proc main() =
   let engine = newQQmlApplicationEngine()
   defer: engine.delete()
 
+  let 
+    logic = newLogic()
+    logicVariant = newQVariant(logic)
+  defer:
+    logicVariant.delete()
+    logic.delete()
+  engine.setRootContextProperty("logic", logicVariant)
+
   let mapModels = collect(newSeqOfCap(layers.len)):
     for layer in layers:
       newMapLayerModel(layer)
-  defer:
-    for mapModel in mapModels:
-      mapModel.delete
+  defer: mapModels.delete
 
-  let mapModelVariants = collect(newSeqOfCap(mapModels.len)):
-    for mapModel in mapModels:
-      newQVariant(mapModel)
-  defer:
-    for mapModelVariant in mapModelVariants:
-      mapModelVariant.delete
+  let mapModelVariants = mapModels.toQVariants
+  defer: mapModelVariants.delete
 
   let mapModelVariantList = mapModelVariants.toQVariant
   defer: mapModelVariantList.delete
