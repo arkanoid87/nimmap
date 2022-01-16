@@ -2,11 +2,11 @@ import std/[os, strformat, sugar, compilesettings]
 
 import nimqml
 
-import qmaplayermodel
-import geometry
+import qlib/maplayermodel
+import nlib/geometry
 
 when not defined(useFuthark):
-  import gdal
+  import nlib/gdal
 else:
   import futhark
   importc:
@@ -60,7 +60,7 @@ proc load(gdalLayer: OGRLayerH): Layer =
         longitude: float = hGeometry.OGR_G_GetX(0)
         latitude: float = hGeometry.OGR_G_GetY(0)
         point: Point = Point(longitude: longitude, latitude: latitude)
-      result.features.add Geometry(kind: gkPoint, point: point)
+      result.features.add Geometry(kind: gkPoint, points: @[point])
     of wkbLineString:
       let
         vertexCount = hGeometry.OGR_G_GetPointCount
@@ -70,7 +70,7 @@ proc load(gdalLayer: OGRLayerH): Layer =
               latitude: float = hGeometry.OGR_G_GetY(vertexIndex)
               longitude: float = hGeometry.OGR_G_GetX(vertexIndex)
             Point(longitude: longitude, latitude: latitude)
-      result.features.add Geometry(kind: gkLine, line: vertices)
+      result.features.add Geometry(kind: gkLine, points: vertices)
     of wkbPolygon:
       let 
         ringGeometry = hGeometry.OGR_G_GetGeometryRef(0)
@@ -81,7 +81,7 @@ proc load(gdalLayer: OGRLayerH): Layer =
               latitude: float = ringGeometry.OGR_G_GetY(vertexIndex)
               longitude: float = ringGeometry.OGR_G_GetX(vertexIndex)
             Point(longitude: longitude, latitude: latitude)
-      result.features.add Geometry(kind: gkPolygon, polygon: vertices)
+      result.features.add Geometry(kind: gkPolygon, points: vertices)
     of wkbMultiPolygon:
       let ringCount = hGeometry.OGR_G_GetGeometryCount
       for ringIndex in 0..<ringCount:
@@ -95,7 +95,7 @@ proc load(gdalLayer: OGRLayerH): Layer =
                 latitude: float = lineStringGeometry.OGR_G_GetY(pointIndex)
                 longitude: float = lineStringGeometry.OGR_G_GetX(pointIndex)
               Point(longitude: longitude, latitude: latitude)
-        result.features.add Geometry(kind: gkPolygon, polygon: vertices)
+        result.features.add Geometry(kind: gkPolygon, points: vertices)
     else:
       raise newException(ValueError, &"Error unknown geometry: {geometryType} ({result.name})")
 
@@ -139,7 +139,7 @@ proc main() =
 
   let mapModels = collect(newSeqOfCap(layers.len)):
     for layer in layers:
-      newQMapLayerModel(layer)
+      newMapLayerModel(layer)
   defer:
     for mapModel in mapModels:
       mapModel.delete

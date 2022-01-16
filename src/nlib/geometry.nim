@@ -10,10 +10,8 @@ type
     gkLine = "line",
     gkPolygon = "polygon"
   Geometry* = object
-    case kind*: GeometryType
-    of gkPoint: point*: Point
-    of gkLine: line*: seq[Point]
-    of gkPolygon: polygon*: seq[Point]
+    kind*: GeometryType
+    points*: seq[Point]
   Layer* = object
     name*: string
     kind*: GeometryType
@@ -23,15 +21,8 @@ proc `$`*(geometry: Geometry): string =
   result = &"{geometry.kind}"
   case geometry.kind:
   of gkPoint:
-    let point = geometry.point
+    let point = geometry.points[0]
     result &= &"[{point.latitude}, {point.longitude}]"
-  of gkLine:
-    let 
-      line = geometry.line
-      pointStr = line.mapIt(&"[{it.latitude}, {it.longitude}]").join(", ")
-    result &= &"[{pointStr}]"
-  of gkPolygon:
-    let
-      polygon = geometry.polygon
-      pointStr = polygon.mapIt(&"[{it.latitude}, {it.longitude}]").join(", ")
+  of gkLine, gkPolygon:
+    let pointStr =  geometry.points.mapIt(&"[{it.latitude}, {it.longitude}]").join(", ")
     result &= &"[{pointStr}]"

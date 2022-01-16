@@ -19,7 +19,7 @@ Window {
         anchors.fill: parent
         plugin: mapPlugin
         center: QtPositioning.coordinate(45.4642, 9.1900)
-        zoomLevel: 10
+        zoomLevel: 13
         copyrightsVisible: false
 
         Repeater {
@@ -35,10 +35,6 @@ Window {
                 }
                 model: modelData
                 delegate: geometryTypeToDelegate(modelData.getGeometryType())
-
-                // Component.onCompleted: {
-                //     console.log(modelData.getGeometryType())
-                // }
             }
         }
 
@@ -46,8 +42,8 @@ Window {
             id: pointDelegate
             MapCircle {
                 center {
-                    latitude: feature.geometry[0]
-                    longitude: feature.geometry[1]
+                    latitude: feature.coordinates[0].latitude
+                    longitude: feature.coordinates[0].longitude
                 }
                 radius: 50.0
                 color: 'red'
@@ -60,8 +56,8 @@ Window {
             MapPolyline {
                 line.color: 'blue'
                 line.width: 2
-                path: feature.geometry.map(function(point) {
-                    return QtPositioning.coordinate(point[0], point[1])
+                path: feature.coordinates.map(function(point) {
+                    return QtPositioning.coordinate(point.latitude, point.longitude)
                 })
             }
         }
@@ -70,8 +66,8 @@ Window {
             id: polygonDelegate
             MapPolygon {
                 color: '#5500FF00'
-                path: feature.geometry.map(function(point) {
-                    return QtPositioning.coordinate(point[0], point[1])
+                path: feature.coordinates.map(function(point) {
+                    return QtPositioning.coordinate(point.latitude, point.longitude)
                 })
             }
         }
